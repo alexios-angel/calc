@@ -7,7 +7,7 @@ import re as regex
 import argparse
 import sys
 
-operations = ['/', '*', '-', '+']
+operations = ['.', "**", "^", "//", '/', '*', '-', '+']
 
 def parenthesis(lexmes):
     stack = [[]]
@@ -71,6 +71,10 @@ def evaluate(node):
         '-': lambda a, b: a - b,  #
         '*': lambda a, b: a * b,  #
         '/': lambda a, b: a / b,  #
+       r"//": lambda a, b: a // b,
+        '.': lambda a, b: a + (b*0.1),
+        '^': lambda a, b: a ** b,
+        "**":lambda a, b:  optable['^'](a,b)
     }
     var = [0, 0]
     if node[0] not in operations:
@@ -79,45 +83,58 @@ def evaluate(node):
         else:
             raise "Something went wrong"
     for i in range(1, 3):
+        res = []
         if isinstance(node[i], list):
             res = evaluate(node[i])
         else:
             res = node[i]
         if res:
-            var[i - 1] = int(res)
-
+            var[i - 1] = float(res)
+    #print(f"{var[0]} {node[0]} {var[1]} = "
+    #f"{optable[node[0]](var[0], var[1])}")
     return optable[node[0]](var[0], var[1])
 
 
 def calc(string):
-    lexemes = regex.findall(r"[()*\/+-]|\d+", string)
+    lexemes = regex.findall(r"[*\/]{2}|[()*\/+-.^]|\d+", string)
     tokens = parenthesis(lexemes)
 
     if tokens == None:
         raise "Missing Parenthesis"
     cst = make_concrete_syntax_tree(tokens)
+    #print(cst)
     ast = make_abstract_syntax_tree(cst)
-    return evaluate(ast)
 
-"""
+    res = evaluate(ast)
+    if not int(res) - res:
+      res = int(res)
+    return res
+
+
 tests = [
     "3+6*(1+3)",
     "6/2*(1+2)",
-    "(2)*(2)",
+    "(6/1)*2/(1+2)",
+    "(2)^(2.5)",
     "1/2",
+    "4//3",
     "-1",
     "1",
+    "-(0)",
+    "0",
+    "1-1",
     "(((2)))",
     "1+1+1+1+1",
     "2/2/2",
-    "2*2*2*2*2*2*2*2*2*2"  # 2^9
+    "2^10",
+    "2*2*2*2*2*2*2*2*2*2"  # 2^10
 ]
 string = ""
 for current_equation in tests:
     calculated_result = calc(current_equation)
-    print(f"{current_equation=} -> {calculated_result=}")
-"""
+    print(f"{current_equation} = {calculated_result}")
 
+"""
 def main(argc, argv):
     parser = argparse.ArgumentParser(prog='Calculator',
                                      usage='%(prog)s <expression>',
@@ -133,4 +150,4 @@ def main(argc, argv):
 
 
 if __name__ == '__main__':
-    main(len(sys.argv), sys.argv)
+    main(len(sys.argv), sys.argv)"""
