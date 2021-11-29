@@ -9,6 +9,7 @@ import sys
 
 operations = ['.', "**", "^", "//", '/', '*', '-', '+']
 
+
 def parenthesis(lexmes):
     stack = [[]]
     j = 1
@@ -71,10 +72,10 @@ def evaluate(node):
         '-': lambda a, b: a - b,  #
         '*': lambda a, b: a * b,  #
         '/': lambda a, b: a / b,  #
-       r"//": lambda a, b: a // b,
-        '.': lambda a, b: a + (b*0.1),
+        "//": lambda a, b: a // b,
+        '.': lambda a, b: a + (b * 0.1),
         '^': lambda a, b: a ** b,
-        "**":lambda a, b:  optable['^'](a,b)
+        "**": lambda a, b: optable['^'](a, b)
     }
     var = [0, 0]
     if node[0] not in operations:
@@ -90,8 +91,8 @@ def evaluate(node):
             res = node[i]
         if res:
             var[i - 1] = float(res)
-    #print(f"{var[0]} {node[0]} {var[1]} = "
-    #f"{optable[node[0]](var[0], var[1])}")
+    # print(f"{var[0]} {node[0]} {var[1]} = "
+    # f"{optable[node[0]](var[0], var[1])}")
     return optable[node[0]](var[0], var[1])
 
 
@@ -102,23 +103,29 @@ def calc(string):
     if tokens == None:
         raise "Missing Parenthesis"
     cst = make_concrete_syntax_tree(tokens)
-    #print(cst)
+    # print(cst)
     ast = make_abstract_syntax_tree(cst)
 
     res = evaluate(ast)
     if not int(res) - res:
-      res = int(res)
+        res = int(res)
     return res
 
 
 tests = [
+    "1/3*1/3",
     "3+6*(1+3)",
     "6/2*(1+2)",
     "(6/1)*2/(1+2)",
-    "(2)^(2.5)",
+    "(2)**(2.5)",
     "1/2",
     "4//3",
     "-1",
+    "1+-1",
+    "+1",
+    "1+",
+    "1/",
+    "2*",
     "1",
     "-(0)",
     "0",
@@ -126,13 +133,41 @@ tests = [
     "(((2)))",
     "1+1+1+1+1",
     "2/2/2",
-    "2^10",
-    "2*2*2*2*2*2*2*2*2*2"  # 2^10
+    "2**10",
+    "2*2*2*2*2*2*2*2*2*2",  # 2^10
+    "50 + 50 - 25 * 0 + 2 + 2",
+    "-42 + 33",
+    "/",
+    "*",
+    "-",
+    "+",
+    "{}"
 ]
+
+import math
+
 string = ""
+paddlen = max([len(s) for s in tests])
 for current_equation in tests:
-    calculated_result = calc(current_equation)
-    print(f"{current_equation} = {calculated_result}")
+    pretty_current_equation = current_equation
+    spaceing = ' ' * ((paddlen - len(pretty_current_equation)) >> 1)
+    pretty_current_equation = spaceing + pretty_current_equation + spaceing
+    pretty_current_equation = pretty_current_equation + ' ' * (paddlen - len(pretty_current_equation))
+    expected_result = ""
+    try:
+        expected_result = eval(current_equation)
+    except:
+        expected_result = "Error"
+    calculated_result = ""
+    try:
+        calculated_result = calc(current_equation)
+    except:
+        calculated_result = 'Could not calculate'
+    print(f"{pretty_current_equation} = {calculated_result}"
+          f"{' ' * (20 - len(str(calculated_result)))}"
+          f"    {expected_result}"
+          f"{' ' * (20 - len(str(expected_result)))}"
+          f"{'Passed' if calculated_result == expected_result else '???' if expected_result == 'Error' and calculated_result == 'Could not calculate' else 'Discrepancy'}")
 
 """
 def main(argc, argv):
